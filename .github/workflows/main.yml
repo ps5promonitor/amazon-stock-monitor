@@ -1,0 +1,15 @@
+name: Test Amazon Monitor
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run test
+        run: python test.py
