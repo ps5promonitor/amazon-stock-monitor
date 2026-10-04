@@ -1,0 +1,19 @@
+name: Pushover Test
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Pushover notification
+        run: |
+          curl -s \
+            --form-string "token=${{ secrets.PUSHOVER_API_TOKEN }}" \
+            --form-string "user=${{ secrets.PUSHOVER_USER_KEY }}" \
+            --form-string "title=Amazon Stock Monitor" \
+            --form-string "message=GitHub Actionsからのテスト通知です！" \
+            https://api.pushover.net/1/messages.json
