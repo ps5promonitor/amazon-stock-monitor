@@ -2,11 +2,17 @@ import os
 import time
 import requests
 
+print("=== Amazon monitor START ===", flush=True)
+
 ASIN = "B0G4RR4DM7"
 URL = f"https://www.amazon.co.jp/dp/{ASIN}"
 
+print(f"Target URL: {URL}", flush=True)
+
 CHECK_INTERVAL = 30
-MAX_RUNTIME = 60 * 60  # 60分
+MAX_RUNTIME = 60 * 60
+
+print("Settings loaded.", flush=True)
 
 headers = {
     "User-Agent": (
