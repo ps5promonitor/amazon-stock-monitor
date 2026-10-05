@@ -10,7 +10,7 @@ URL = f"https://www.amazon.co.jp/dp/{ASIN}"
 print(f"Target URL: {URL}", flush=True)
 
 CHECK_INTERVAL = 30
-MAX_RUNTIME = 60 * 60
+MAX_RUNTIME = 55 * 60  # 55分
 
 print("Settings loaded.", flush=True)
 
