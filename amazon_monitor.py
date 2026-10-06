@@ -102,7 +102,9 @@ while time.time() - start_time < MAX_RUNTIME:
 
         page = response.text
         page_lower = page.lower()
-
+        
+        print("PAGE PREVIEW:", page[:1000], flush=True)
+        
         # --------------------------
         # 対象商品の確認
         # --------------------------
