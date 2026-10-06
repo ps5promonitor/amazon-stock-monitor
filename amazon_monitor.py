@@ -94,6 +94,31 @@ while time.time() - start_time < MAX_RUNTIME:
             "HTML length=", len(page),
             flush=True
         )
+        # Amazon「他の出品者」側を診断
+        offer_url = (
+            "https://www.amazon.co.jp/gp/product/ajax/"
+            "ref=dp_aod_ALL_mbc?asin=B0G4RR4DM7"
+            "&pc=dp&experienceId=aodAjaxMain"
+        )
+
+        offer_response = requests.get(
+            offer_url,
+            headers=headers,
+            timeout=20
+        )
+
+        offer_page = offer_response.text
+
+        print(
+            "OFFER DIAG:",
+            "HTTP=", offer_response.status_code,
+            "137980=", "137980" in offer_page,
+            "137,980=", "137,980" in offer_page,
+            "Amazon.co.jp=", "Amazon.co.jp" in offer_page,
+            "新品=", "新品" in offer_page,
+            "length=", len(offer_page),
+            flush=True
+            )
         # -----------------------------
         # 在庫判定
         # -----------------------------
