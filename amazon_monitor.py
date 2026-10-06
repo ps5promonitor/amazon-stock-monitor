@@ -88,6 +88,22 @@ while time.time() - start_time < MAX_RUNTIME:
         page_lower = page.lower()
         print("PAGE CHECK:", "b0g4rr4dm7" in page_lower, "availability" in page_lower, "price" in page_lower, flush=True)
         print("PAGE TITLE:", page[page.find("<title>"):page.find("</title>") + 8], flush=True)
+        
+        # Amazon価格データの診断
+        price_keywords = [
+            "137980",
+            "137,980",
+            "137980.00",
+            "priceToPay",
+            "apexPriceToPay",
+            "corePriceDisplay",
+        ]
+
+        print(
+            "PRICE DIAG:",
+            [(word, word.lower() in page_lower) for word in price_keywords],
+            flush=True
+        )
 
         print(
             "BUYBOX CHECK:",
