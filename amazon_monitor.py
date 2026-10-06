@@ -88,48 +88,35 @@ while time.time() - start_time < MAX_RUNTIME:
         # -----------------------------
         # 在庫判定
         # -----------------------------
+# Amazon新品 137,980円の瞬間入荷を優先検出
+target_price_words = [
+    "137,980",
+    "137980",
+    "￥137,980",
+    "¥137,980",
+]
 
-        strong_stock_words = [
-            "カートに入れる",
-            "今すぐ買う",
-        ]
+has_target_price = any(
+    word in page
+    for word in target_price_words
+)
 
-        shipping_words = [
-            "在庫あり",
-            "通常1〜2日以内に発送",
-            "通常2〜3日以内に発送",
-            "通常1～2日以内に発送",
-            "通常2～3日以内に発送",
-        ]
+has_buy_button = (
+    "カートに入れる" in page
+    or "今すぐ買う" in page
+)
 
-        unavailable_words = [
-            "現在在庫切れです",
-            "現在お取り扱いできません",
-            "一時的に在庫切れ",
-        ]
+# デバッグ用：30秒ごとの判定をActionsログに表示
+print(
+    f"Target price: {has_target_price} | "
+    f"Buy button: {has_buy_button}",
+    flush=True
+)
 
-        has_buy_button = any(
-            word in page
-            for word in strong_stock_words
-        )
-
-        has_shipping = any(
-            word in page
-            for word in shipping_words
-        )
-
-        unavailable = any(
-            word in page
-            for word in unavailable_words
-        )
-
-        # 購入ボタンがあり、
-        # 明確な在庫切れ表示がない場合を候補とする
-        in_stock = (
-            has_buy_button
-            and not unavailable
-        )
-
+# 137,980円がページ内に出現したことを最優先で検知
+# 「他の出品者」欄にAmazon新品が出た場合も拾う
+in_stock = has_target_price
+        
         if in_stock:
 
             print(
@@ -137,19 +124,12 @@ while time.time() - start_time < MAX_RUNTIME:
                 flush=True
             )
 
-            if has_shipping:
-                message = (
-                    "AmazonでPS5 Pro "
-                    "CFI-7100B01の在庫を検知しました！\n"
-                    "購入可能表示＋発送/在庫表示を確認。\n"
-                    "すぐAmazonを確認してください。"
-                )
-            else:
-                message = (
-                    "AmazonでPS5 Pro "
-                    "CFI-7100B01の購入可能表示を検知しました！\n"
-                    "すぐAmazonを確認してください。"
-                )
+            message = (
+    "🚨 Amazon PS5 Pro 入荷検知！\n"
+    "CFI-7100B01で137,980円の表示を検出しました。\n"
+    "Amazon新品の瞬間入荷の可能性があります。\n"
+    "すぐAmazonの商品ページを確認してください！"
+)
 
             sent = send_notification(message)
 
