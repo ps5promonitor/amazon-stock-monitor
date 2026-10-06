@@ -8,7 +8,7 @@ ASIN = "B0G4RR4DM7"
 URL = f"https://www.amazon.co.jp/dp/{ASIN}"
 
 CHECK_INTERVAL = 30
-MAX_RUNTIME = 55 * 60  # 55分
+MAX_RUNTIME = 25 * 60  # 25分  # 55分
 
 headers = {
     "User-Agent": (
