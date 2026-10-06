@@ -3,7 +3,7 @@ name: Amazon PS5 Pro Monitor
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "*/30 * * * *"
 
 concurrency:
   group: amazon-stock-monitor
