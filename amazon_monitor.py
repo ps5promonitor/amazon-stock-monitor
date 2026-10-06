@@ -152,8 +152,8 @@ while time.time() - start_time < MAX_RUNTIME:
         )
 
         has_buy_button = (
-            "カートに入れる" in page
-            or "今すぐ買う" in page
+            "add-to-cart-button" in page
+            or "buy-now-button" in page
         )
 
         # 30秒ごとの判定をActionsログに表示
