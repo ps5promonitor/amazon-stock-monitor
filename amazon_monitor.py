@@ -2,74 +2,88 @@ import os
 import time
 import requests
 
-print("=== Amazon monitor START ===", flush=True)
+# ==============================
+# 設定
+# ==============================
 
 ASIN = "B0G4RR4DM7"
-URL = f"https://www.amazon.co.jp/dp/{ASIN}"
+PRODUCT_URL = f"https://www.amazon.co.jp/dp/{ASIN}"
 
 CHECK_INTERVAL = 30
-MAX_RUNTIME = 55 * 60  # 55分
+MAX_RUNTIME = 55 * 60
 
-headers = {
+PUSHOVER_TOKEN = os.environ["PUSHOVER_TOKEN"]
+PUSHOVER_USER = os.environ["PUSHOVER_USER"]
+
+HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) "
         "AppleWebKit/605.1.15 (KHTML, like Gecko) "
         "Version/18.0 Mobile/15E148 Safari/604.1"
     ),
-    "Accept-Language": "ja-JP,ja;q=0.9",
+    "Accept-Language": "ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7",
 }
 
-token = os.environ.get("PUSHOVER_API_TOKEN")
-user = os.environ.get("PUSHOVER_USER_KEY")
-
-start_time = time.time()
-check_count = 0
-
-print(f"Target URL: {URL}", flush=True)
-print("Settings loaded.", flush=True)
-print("Amazon PS5 Pro monitor started.", flush=True)
-
+# ==============================
+# Pushover
+# ==============================
 
 def send_notification(message):
-    if not token or not user:
-        print("Pushover settings missing.", flush=True)
-        return False
-
     try:
-        result = requests.post(
+        response = requests.post(
             "https://api.pushover.net/1/messages.json",
             data={
-                "token": token,
-                "user": user,
-                "title": "🚨 PS5 Pro Amazon入荷！",
+                "token": PUSHOVER_TOKEN,
+                "user": PUSHOVER_USER,
+                "title": "PS5 Pro Amazon入荷",
                 "message": message,
-                "url": URL,
-                "url_title": "Amazonの商品ページを開く",
+                "url": PRODUCT_URL,
+                "url_title": "Amazonで確認",
                 "priority": 1,
             },
             timeout=20,
         )
 
         print(
-            f"Pushover: HTTP {result.status_code}",
+            f"Pushover HTTP {response.status_code}",
             flush=True
         )
 
-        return result.status_code == 200
+        return response.status_code == 200
 
     except Exception as e:
-        print("Pushover error:", e, flush=True)
+        print(
+            f"Pushover error: {e}",
+            flush=True
+        )
         return False
 
+
+# ==============================
+# 監視開始
+# ==============================
+
+print(
+    "Amazon PS5 Pro monitor started.",
+    flush=True
+)
+
+start_time = time.time()
+check_count = 0
+
+session = requests.Session()
+session.headers.update(HEADERS)
 
 while time.time() - start_time < MAX_RUNTIME:
 
     check_count += 1
 
     try:
-        response = requests.get(
-            URL,
-            headers=headers,
+        # キャッシュ回避用
+        url = f"{PRODUCT_URL}?psc=1&t={int(time.time())}"
+
+        response = session.get(
+            url,
             timeout=20
         )
 
@@ -79,142 +93,127 @@ while time.time() - start_time < MAX_RUNTIME:
         )
 
         if response.status_code != 200:
-            print("Amazon page unavailable.", flush=True)
+            print(
+                "Amazon returned non-200 response.",
+                flush=True
+            )
             time.sleep(CHECK_INTERVAL)
             continue
 
         page = response.text
-        
         page_lower = page.lower()
-        print("PAGE CHECK:", "b0g4rr4dm7" in page_lower, "availability" in page_lower, "price" in page_lower, flush=True)
-        print("PAGE TITLE:", page[page.find("<title>"):page.find("</title>") + 8], flush=True)
-        
-        # Amazon価格データの診断
-        price_keywords = [
-            "137980",
-            "137,980",
-            "137980.00",
-            "priceToPay",
-            "apexPriceToPay",
-            "corePriceDisplay",
-        ]
 
-        print(
-            "PRICE DIAG:",
-            [(word, word.lower() in page_lower) for word in price_keywords],
-            flush=True
+        # --------------------------
+        # 対象商品の確認
+        # --------------------------
+
+        correct_product = (
+            ASIN.lower() in page_lower
+            or "cfi-7100b01" in page_lower
         )
 
-        print(
-            "BUYBOX CHECK:",
-            "add-to-cart-button" in page,
-            "buy-now-button" in page,
-            "availability" in page.lower(),
-            "merchant-info" in page,
-            "desktop_buybox" in page.lower(),
-            "buybox" in page.lower(),
-            flush=True
-        )
-        
-        print(
-            "DIAG:",
-            "137980=", "137980" in page,
-            "137,980=", "137,980" in page,
-            "Amazon.co.jp=", "Amazon.co.jp" in page,
-            "他の出品者=", "他の出品者" in page,
-            "新品=", "新品" in page,
-            "HTML length=", len(page),
-            flush=True
-        )
-        # Amazon「他の出品者」側を診断
-        offer_url = (
-            "https://www.amazon.co.jp/gp/product/ajax/"
-            "ref=dp_aod_ALL_mbc?asin=B0G4RR4DM7"
-            "&pc=dp&experienceId=aodAjaxMain"
-        )
+        # --------------------------
+        # 137,980円の検出
+        # --------------------------
 
-        offer_response = requests.get(
-            offer_url,
-            headers=headers,
-            timeout=20
-        )
-
-        offer_page = offer_response.text
-
-        print(
-            "OFFER DIAG:",
-            "HTTP=", offer_response.status_code,
-            "137980=", "137980" in offer_page,
-            "137,980=", "137,980" in offer_page,
-            "Amazon.co.jp=", "Amazon.co.jp" in offer_page,
-            "新品=", "新品" in offer_page,
-            "length=", len(offer_page),
-            flush=True
-            )
-        # -----------------------------
-        # 在庫判定
-        # -----------------------------
-        # Amazon新品 137,980円の瞬間入荷を優先検出
-        target_price_words = [
+        price_words = [
             "137,980",
             "137980",
             "￥137,980",
             "¥137,980",
+            "137,980円",
+            "137980.00",
         ]
 
         has_target_price = any(
-            word in page
-            for word in target_price_words
+            word.lower() in page_lower
+            for word in price_words
         )
 
-        has_buy_button = (
-            "add-to-cart-button" in page
-            or "buy-now-button" in page
-        )
+        # --------------------------
+        # 購入可能要素
+        # --------------------------
 
-        # 30秒ごとの判定をActionsログに表示
+        has_buy_element = any([
+            "add-to-cart-button" in page_lower,
+            "buy-now-button" in page_lower,
+            "addtocart" in page_lower,
+        ])
+
+        # --------------------------
+        # Amazon販売の手掛かり
+        # --------------------------
+
+        has_amazon_seller = any([
+            "amazon.co.jp" in page_lower,
+            "ships from amazon.co.jp" in page_lower,
+            "sold by amazon.co.jp" in page_lower,
+            "販売元" in page and "amazon.co.jp" in page_lower,
+        ])
+
+        # --------------------------
+        # ログ
+        # --------------------------
+
         print(
-            f"Target price: {has_target_price} | "
-            f"Buy button: {has_buy_button}",
-            flush=True
+            "CHECK:",
+            f"product={correct_product}",
+            f"price137980={has_target_price}",
+            f"buy={has_buy_element}",
+            f"amazon={has_amazon_seller}",
+            f"html={len(page)}",
+            flush=True,
         )
 
-        # 137,980円の表示を検出
-        in_stock = has_target_price and has_buy_button
+        # --------------------------
+        # 通知判定
+        # --------------------------
+        #
+        # 最重要条件：
+        # 対象商品 + 137,980円
+        #
+        # Buy Boxは在庫切れでもHTMLに存在することが
+        # 実測で分かったため、必須条件にはしない。
+        #
+
+        in_stock = (
+            correct_product
+            and has_target_price
+        )
 
         if in_stock:
+
             print(
-                "POSSIBLE STOCK DETECTED!",
+                "TARGET OFFER DETECTED!",
                 flush=True
             )
 
             message = (
-                "🚨 Amazon PS5 Pro 入荷検知！\n"
-                "CFI-7100B01で137,980円の表示を検出しました。\n"
-                "Amazon新品の瞬間入荷の可能性があります。\n"
-                "すぐAmazonの商品ページを確認してください！"
+                "🚨 PS5 Pro CFI-7100B01 入荷候補！\n"
+                "Amazonページで137,980円を検出しました。\n"
+                "Amazonの出品をすぐ確認してください。"
             )
 
-            sent = send_notification(message)
+            if send_notification(message):
 
-            if sent:
                 print(
                     "Notification sent successfully.",
                     flush=True
                 )
 
-            # 通知後に監視終了
-            break
+                break
 
         else:
+
             print(
-                "No stock detected.",
+                "No target offer detected.",
                 flush=True
             )
+
     except Exception as e:
+
         print(
-            "Check error:",
-            e,
+            f"Monitor error: {e}",
             flush=True
         )
 
@@ -226,4 +225,7 @@ while time.time() - start_time < MAX_RUNTIME:
     time.sleep(CHECK_INTERVAL)
 
 
-print("Amazon monitor finished.", flush=True)
+print(
+    "Monitor finished.",
+    flush=True
+)
