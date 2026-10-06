@@ -84,6 +84,11 @@ while time.time() - start_time < MAX_RUNTIME:
             continue
 
         page = response.text
+        
+        page_lower = page.lower()
+        print("PAGE CHECK:", "b0g4rr4dm7" in page_lower, "availability" in page_lower, "price" in page_lower, flush=True)
+        print("PAGE TITLE:", page[page.find("<title>"):page.find("</title>") + 8], flush=True)
+        
         print(
             "DIAG:",
             "137980=", "137980" in page,
