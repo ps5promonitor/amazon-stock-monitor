@@ -12,8 +12,8 @@ PRODUCT_URL = f"https://www.amazon.co.jp/dp/{ASIN}"
 CHECK_INTERVAL = 30
 MAX_RUNTIME = 55 * 60
 
-PUSHOVER_TOKEN = os.environ["PUSHOVER_TOKEN"]
-PUSHOVER_USER = os.environ["PUSHOVER_USER"]
+PUSHOVER_TOKEN = os.environ["PUSHOVER_API_TOKEN"]
+PUSHOVER_USER = os.environ["PUSHOVER_USER_KEY"]
 
 HEADERS = {
     "User-Agent": (
