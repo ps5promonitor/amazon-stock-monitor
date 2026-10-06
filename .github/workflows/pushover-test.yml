@@ -2,18 +2,20 @@ name: Pushover Test
 
 on:
   workflow_dispatch:
-  push:
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Send Pushover notification
+      - name: Send PS5 Pro test notification
         run: |
           curl -s \
             --form-string "token=${{ secrets.PUSHOVER_API_TOKEN }}" \
             --form-string "user=${{ secrets.PUSHOVER_USER_KEY }}" \
-            --form-string "title=Amazon Stock Monitor" \
-            --form-string "message=GitHub Actionsからのテスト通知です！" \
+            --form-string "title=🚨 PS5 Pro Amazon入荷！" \
+            --form-string "message=【テスト】AmazonでPS5 Pro CFI-7100B01の在庫を検知しました！" \
+            --form-string "url=https://www.amazon.co.jp/dp/B0G4RR4DM7" \
+            --form-string "url_title=Amazonの商品ページを開く" \
+            --form-string "priority=1" \
             https://api.pushover.net/1/messages.json
