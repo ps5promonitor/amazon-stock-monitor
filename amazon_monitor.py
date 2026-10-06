@@ -88,63 +88,63 @@ while time.time() - start_time < MAX_RUNTIME:
         # -----------------------------
         # 在庫判定
         # -----------------------------
-            # Amazon新品 137,980円の瞬間入荷を優先検出
-            target_price_words = [
-                "137,980",
-                "137980",
-                "￥137,980",
-                "¥137,980",
-            ]
+        # Amazon新品 137,980円の瞬間入荷を優先検出
+        target_price_words = [
+            "137,980",
+            "137980",
+            "￥137,980",
+            "¥137,980",
+        ]
 
-            has_target_price = any(
-                word in page
-                for word in target_price_words
-            )
+        has_target_price = any(
+            word in page
+            for word in target_price_words
+        )
 
-            has_buy_button = (
-                "カートに入れる" in page
-                or "今すぐ買う" in page
-            )
+        has_buy_button = (
+            "カートに入れる" in page
+            or "今すぐ買う" in page
+        )
 
-            # 30秒ごとの判定をActionsログに表示
+        # 30秒ごとの判定をActionsログに表示
+        print(
+            f"Target price: {has_target_price} | "
+            f"Buy button: {has_buy_button}",
+            flush=True
+        )
+
+        # 137,980円の表示を検出
+        in_stock = has_target_price
+
+        if in_stock:
             print(
-                f"Target price: {has_target_price} | "
-                f"Buy button: {has_buy_button}",
+                "POSSIBLE STOCK DETECTED!",
                 flush=True
             )
 
-            # 137,980円の表示を検出
-            in_stock = has_target_price
+            message = (
+                "🚨 Amazon PS5 Pro 入荷検知！\n"
+                "CFI-7100B01で137,980円の表示を検出しました。\n"
+                "Amazon新品の瞬間入荷の可能性があります。\n"
+                "すぐAmazonの商品ページを確認してください！"
+            )
 
-            if in_stock:
+            sent = send_notification(message)
+
+            if sent:
                 print(
-                    "POSSIBLE STOCK DETECTED!",
+                    "Notification sent successfully.",
                     flush=True
                 )
 
-                message = (
-                    "🚨 Amazon PS5 Pro 入荷検知！\n"
-                    "CFI-7100B01で137,980円の表示を検出しました。\n"
-                    "Amazon新品の瞬間入荷の可能性があります。\n"
-                    "すぐAmazonの商品ページを確認してください！"
-                )
+            # 通知後に監視終了
+            break
 
-                sent = send_notification(message)
-
-                if sent:
-                    print(
-                        "Notification sent successfully.",
-                        flush=True
-                    )
-
-                # 通知後に監視終了
-                break
-
-            else:
-                print(
-                    "No stock detected.",
-                    flush=True
-                )
+        else:
+            print(
+                "No stock detected.",
+                flush=True
+            )
     except Exception as e:
         print(
             "Check error:",
