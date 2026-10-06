@@ -164,7 +164,7 @@ while time.time() - start_time < MAX_RUNTIME:
         )
 
         # 137,980円の表示を検出
-        in_stock = has_target_price
+        in_stock = has_target_price and has_buy_button
 
         if in_stock:
             print(
