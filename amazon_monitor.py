@@ -84,7 +84,16 @@ while time.time() - start_time < MAX_RUNTIME:
             continue
 
         page = response.text
-
+        print(
+            "DIAG:",
+            "137980=", "137980" in page,
+            "137,980=", "137,980" in page,
+            "Amazon.co.jp=", "Amazon.co.jp" in page,
+            "他の出品者=", "他の出品者" in page,
+            "新品=", "新品" in page,
+            "HTML length=", len(page),
+            flush=True
+        )
         # -----------------------------
         # 在庫判定
         # -----------------------------
