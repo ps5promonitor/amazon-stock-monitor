@@ -103,6 +103,14 @@ while time.time() - start_time < MAX_RUNTIME:
         page = response.text
         page_lower = page.lower()
         
+        if (
+            "automated access to amazon data" in page_lower
+            or "api-services-support@amazon.com" in page_lower
+        ):
+            print("Amazon block page detected. Waiting 5 minutes...", flush=True)
+            time.sleep(300)
+            continue
+        
         print("PAGE PREVIEW:", page[:1000], flush=True)
         
         # --------------------------
