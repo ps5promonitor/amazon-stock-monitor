@@ -37,7 +37,7 @@ def send_notification(message):
                 "user": PUSHOVER_USER,
                 "title": "PS5 Pro Amazon入荷",
                 "message": message,
-                "url": PRODUCT_URL,
+                "url": "shortcuts://run-shortcut?name=URL",
                 "url_title": "Amazonで確認",
                 "priority": 1,
             },
