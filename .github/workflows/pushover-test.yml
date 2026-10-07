@@ -15,7 +15,7 @@ jobs:
             --form-string "user=${{ secrets.PUSHOVER_USER_KEY }}" \
             --form-string "title=🚨 PS5 Pro Amazon入荷！" \
             --form-string "message=【テスト】AmazonでPS5 Pro CFI-7100B01の在庫を検知しました！" \
-            --form-string "url=https://www.amazon.co.jp/dp/B0G4RR4DM7" \
+            --form-string "url=shortcuts://run-shortcut?name=URL" \
             --form-string "url_title=Amazonの商品ページを開く" \
             --form-string "priority=1" \
             https://api.pushover.net/1/messages.json
